@@ -1,0 +1,23 @@
+This file defines what pins are being used as part of the project.
+they are as per the location on the board. 
+
+1.  3v3 to lv on level shifter
+2. 5v. to HV on level shifter
+3.
+4. 5v to + on relay
+5.
+6. Gnd to ground on Level shifter
+7. 
+8. Rx to Level shifter LV pin 1/2
+9. 
+10. 
+11.
+12. GPIO 18 to Relay sw pin.
+13.
+14.
+15.
+16.
+17.
+18.
+19.
+20. GND to Relay - pin

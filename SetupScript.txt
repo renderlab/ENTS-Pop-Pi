@@ -1,0 +1,6 @@
+This document contains scripts neccessary to setup the pi with all the git modules needed for connecting all the parts.
+
+Python
+MySQL
+GPIO
+Serial

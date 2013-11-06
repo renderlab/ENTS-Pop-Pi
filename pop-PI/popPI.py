@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -16,8 +15,13 @@ GPIO.output(18, False)
 
 ser = serial.Serial('/dev/ttyAMA0', 2400, timeout=0.5)
 while True:
+	ser.open()
+        RFID = ""
         RFID = ser.read(12)
+        
         if len(RFID) != 0:
+          ser.flushInput()
+          ser.flushOutput()
           ser.close()
           print "RFID Read: " + RFID
 		#Tag read
@@ -47,7 +51,7 @@ while True:
                         cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
                         account = cur.fetchone()
                         print "Member new Account balance is : %s " % account
-                        sleep(10)
+                        sleep(2)
         #               ser.open()
             else:
 				#create new member
@@ -57,9 +61,11 @@ while True:
                 account = cur.fetchone()
 
                 print "Member Account balance is : %s " % account
-            sleep(5) #sleep for 5 seconds to prevent rfid reading
+            sleep(1) #sleep for 5 seconds to prevent rfid reading
             ser.open()
-            sleep(5)
+            ser.flushInput()
+            ser.flushOutput()
+            sleep(1)
 
           except mdb.Error, e:
 
@@ -70,6 +76,4 @@ while True:
                 ser.close()
                 if con:
                         con.close()
-                        GPIO.cleanup()
-
-
+GPIO.cleanup()

@@ -9,28 +9,35 @@ import serial
 RFID = ''
 GPIO.setmode(GPIO.BCM)
 #enable the gpio
-GPIO.setup(18, GPIO.OUT)
+GPIO.setup(23, GPIO.OUT)# output for relay
+GPIO.setup(18, GPIO.OUT) # output for rfid enable
 #set the initial state
+GPIO.output(23, False)#old 18
 GPIO.output(18, False)
+Debug = True
 
 ser = serial.Serial('/dev/ttyAMA0', 2400, timeout=0.5)
+
 while True:
-	ser.open()
+        ser.open()
         RFID = ""
+        GPIO.output(18, False)
         RFID = ser.read(12)
-        
+
         if len(RFID) != 0:
+          GPIO.output(18, True)#rfid read pull the enable pin
           ser.flushInput()
           ser.flushOutput()
           ser.close()
           print "RFID Read: " + RFID
-		#Tag read
-        
+#Tag read
+          #print string
           try:
            con = mdb.connect('localhost', 'root', 'pi', 'pop_PI');
            with con:
             cur = con.cursor()
 
+            #cur.execute("INSERT into MemberAccount (RFID, Account) VALUES ('126$
             cur.execute("SELECT 1 from MemberAccount where RFID = '%s'" % RFID )
             memberFound = cur.fetchone()
             if memberFound > 0:
@@ -38,34 +45,38 @@ while True:
                 cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
 
                 account = cur.fetchone()
-				#does the member have a positive balance 
+#does the member have a positive account
                 if account > 0:
                         sleep(1)
-                        GPIO.output(18, False)
+                        GPIO.output(23, False)
                         sleep(1)
-                        GPIO.output(18, True)
+                        GPIO.output(23, True)#old 18
                         sleep(1)
-                        GPIO.output(18, False)
-						#update the members balance
+                        GPIO.output(23, False)#old 18
+
                         cur.execute("Update MemberAccount set Account = Account -1 where RFID = '%s'" % RFID)
                         cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
+
                         account = cur.fetchone()
                         print "Member new Account balance is : %s " % account
+                        RFID = ""
                         sleep(2)
         #               ser.open()
             else:
-				#create new member
+#create new member
                 print "Member Not Found Create"
                 cur.execute("insert into MemberAccount (RFID,Account)values('%s',0)" % RFID)
                 cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
                 account = cur.fetchone()
+                RFID = ""
 
                 print "Member Account balance is : %s " % account
-            sleep(1) #sleep for 5 seconds to prevent rfid reading
+            sleep(1) #sleep for 5 seconds to prevent rfid
             ser.open()
             ser.flushInput()
             ser.flushOutput()
             sleep(1)
+
 
           except mdb.Error, e:
 

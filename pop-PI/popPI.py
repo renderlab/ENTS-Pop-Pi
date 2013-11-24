@@ -6,6 +6,8 @@ import RPi.GPIO as GPIO
 import MySQLdb as mdb
 import sys
 import serial
+import Email
+
 RFID = ''
 GPIO.setmode(GPIO.BCM)
 #enable the gpio
@@ -37,7 +39,6 @@ while True:
            with con:
             cur = con.cursor()
 
-            #cur.execute("INSERT into MemberAccount (RFID, Account) VALUES ('126$
             cur.execute("SELECT 1 from MemberAccount where RFID = '%s'" % RFID )
             memberFound = cur.fetchone()
             if memberFound > 0:
@@ -46,24 +47,31 @@ while True:
 
                 account = cur.fetchone()
 #does the member have a positive account
-                if account > 0:
-                        sleep(1)
-                        GPIO.output(23, False)
-                        sleep(1)
-                        GPIO.output(23, True)#old 18
-                        sleep(1)
-                        GPIO.output(23, False)#old 18
+                if (account > 0):
+					sleep(1)
+					GPIO.output(23, False)
+					sleep(1)
+					GPIO.output(23, True)#old 18
+					sleep(1)
+					GPIO.output(23, False)#old 18
 
-                        cur.execute("Update MemberAccount set Account = Account -1 where RFID = '%s'" % RFID)
-                        cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
+					cur.execute("Update MemberAccount set Account = Account -1 where RFID = '%s'" % RFID)
+					cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
 
-                        account = cur.fetchone()
-                        print "Member new Account balance is : %s " % account
-                        RFID = ""
-                        sleep(2)
-        #               ser.open()
+					account = cur.fetchone()
+					print "Member new Account balance is : %s " % account
+					#Notify the member of their account
+					Email.emailMember(RFID)
+					
+					RFID = ""
+					sleep(2)
+					#ser.open()
+				else
+					#The Notify the member of their account
+					Email.emailMember(RFID)
+					
             else:
-#create new member
+				#create new member
                 print "Member Not Found Create"
                 cur.execute("insert into MemberAccount (RFID,Account)values('%s',0)" % RFID)
                 cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )

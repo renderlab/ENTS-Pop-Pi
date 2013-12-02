@@ -58,16 +58,35 @@ while True:
 
 					account = cur.fetchone()
 					print "Member new Account balance is : %s " % account
+					
+					cur.execute("Insert PopVend (Pop) values (1)")
+					cur.execute("Insert Inventory (Pop) values (-1)")
+					cur.execute("Select count(Pop) from PopVend")
+					popVendTotal = cur.fetchone()
+					cur.execute("Select sum(pop) from Inventory")
+
+					try:
+						response = urllib2.urlopen('http://api.thingspeak.com/update?key=HCT8075Y1EDGTU7T&field2=%n&field3=%n' % (membercount, inventory)) #update thingspeak
+						html = response.read()
+					finally:
+							#we tried
+
 					#Notify the member of their account
-					Email.emailMember(RFID)
+					try:
+                        Email.emailMember(RFID)
+                    finally:
+                        #we tried
 					
 					RFID = ""
 					sleep(2)
 					#ser.open()
 				else
 					#The Notify the member of their account
-					Email.emailMember(RFID)
-					
+					try:
+                        Email.emailMember(RFID)
+                    finally:
+                        #we tried
+
             else:
 				#create new member
                 print "Member Not Found Create"
@@ -75,6 +94,14 @@ while True:
                 cur.execute("SELECT Account from MemberAccount where RFID = '%s'" % RFID )
                 account = cur.fetchone()
                 RFID = ""
+
+                cur.execute("Select count(Account) from MemberAccount")
+                membercount = cur.fetchone()
+                try:
+                    response = urllib2.urlopen('http://api.thingspeak.com/update?key=HCT8075Y1EDGTU7T&field1=%n' % membercount)
+                    html = response.read()
+                finally:
+                    #we tried
 
                 print "Member Account balance is : %s " % account
             sleep(1) #sleep for 5 seconds to prevent rfid
